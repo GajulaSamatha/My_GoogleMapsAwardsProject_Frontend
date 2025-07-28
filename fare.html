@@ -315,7 +315,7 @@
     </div>
   </div>
 
- <!-- Bootstrap JS -->
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- Google Maps & Fare Calculation Script -->
@@ -326,7 +326,6 @@
 
   function initMap() {
     const defaultCenter = { lat: 17.3850, lng: 78.4867 };
-
     map = new google.maps.Map(document.getElementById("map"), {
       center: defaultCenter,
       zoom: 12,
@@ -349,12 +348,8 @@
     });
     directionsRenderer.setMap(map);
 
-    const pickupAutocomplete = new google.maps.places.Autocomplete(
-      document.getElementById("pickup")
-    );
-    const dropAutocomplete = new google.maps.places.Autocomplete(
-      document.getElementById("drop")
-    );
+    new google.maps.places.Autocomplete(document.getElementById("pickup"));
+    new google.maps.places.Autocomplete(document.getElementById("drop"));
   }
 
   document.getElementById("detectLocation").addEventListener("click", function () {
@@ -440,9 +435,7 @@
     const tip = parseFloat(document.getElementById("tip").value) || 0;
     const isNight = document.getElementById("nightRide").checked;
     const isShared = document.getElementById("sharedAuto").checked;
-
     const fuelPrice = parseFloat(document.getElementById("fuelPrice").value) || 0;
-    const baseRate = 10; // per km
 
     if (!pickup || !drop) {
       alert("Please enter both pickup and drop locations");
@@ -451,7 +444,11 @@
 
     try {
       const distance = await calculateRoute(pickup, drop);
-      let baseFare = distance * baseRate;
+      const fuelPerKm = 0.33;
+      const fuelCost = distance * fuelPerKm * fuelPrice;
+      const driverEffort = Math.ceil(distance / 0.5) * 10;
+
+      let baseFare = fuelCost + driverEffort;
       let adjustments = 0;
       if (isNight) adjustments += 10;
       if (isShared) adjustments -= 5;
@@ -460,8 +457,10 @@
 
       document.getElementById("fareDetails").innerHTML = `
         <p><strong>Distance:</strong> ${distance.toFixed(2)} km</p>
+        <p><strong>Fuel Used:</strong> ${(distance * fuelPerKm).toFixed(2)} L</p>
         <p><strong>Fuel Price:</strong> ₹${fuelPrice}/L</p>
-        <p><strong>Rate/km:</strong> ₹${baseRate}</p>
+        <p><strong>Fuel Cost:</strong> ₹${fuelCost.toFixed(2)}</p>
+        <p><strong>Driver Effort:</strong> ₹${driverEffort}</p>
         <p><strong>Tip:</strong> ₹${tip}</p>
         ${isNight ? "<p><strong>Night Ride Charge:</strong> ₹10</p>" : ""}
         ${isShared ? "<p><strong>Shared Discount:</strong> -₹5</p>" : ""}
@@ -478,5 +477,6 @@
 
 <!-- Google Maps API -->
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCrpR8C1hpM3Agj6_spMV52l9Ww1Y5TvFM&libraries=places&callback=initMap"></script>
+
 </body>
 </html>
