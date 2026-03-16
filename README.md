@@ -8,6 +8,8 @@ The frontend interacts seamlessly with the hosted backend, providing a fully fun
 
 Experience the application here: [https://fareestimator.netlify.app/](https://fareestimator.netlify.app/)
 
+If API is not availabel, I request you to watch https://youtube.com/shorts/vy8b9VSdpmc?si=Ghg4L1E_BynrmpmM.
+
 The backend is also hosted and connected, so all API calls work seamlessly. You can find the backend repository here: [Fare Estimator Backend](https://github.com/GajulaSamatha/My_GoogleMapsAwardsProject_Backend)
 
 ## 🛠️ Technologies Used
