@@ -209,7 +209,6 @@
           <p class="hero-subtitle">Get accurate auto ride estimates instantly</p>
           
           <form id="fareForm">
-            <!-- Pickup Location -->
             <div class="mb-3">
               <label for="pickup" class="form-label fw-semibold">
                 <i class="fas fa-map-marker-alt me-2"></i>Pickup Location *
@@ -222,7 +221,6 @@
               </div>
             </div>
 
-            <!-- Drop Location -->
             <div class="mb-3">
               <label for="drop" class="form-label fw-semibold">
                 <i class="fas fa-flag-checkered me-2"></i>Drop Location *
@@ -230,7 +228,6 @@
               <input type="text" class="form-control" id="drop" placeholder="Enter drop location" required>
             </div>
 
-            <!-- Fuel Price -->
             <div class="mb-3">
               <label for="fuelPrice" class="form-label fw-semibold">
                 <i class="fas fa-gas-pump me-2"></i>Fuel Price (₹/L)
@@ -239,7 +236,6 @@
               <div class="form-text">Auto-detected based on your city</div>
             </div>
 
-            <!-- Driver Tip -->
             <div class="mb-3">
               <label for="tip" class="form-label fw-semibold">
                 <i class="fas fa-coins me-2"></i>Driver Tip (₹)
@@ -247,9 +243,6 @@
               <input type="number" class="form-control" id="tip" placeholder="Optional tip amount" min="0">
             </div>
 
-
-
-            <!-- Checkboxes -->
             <div class="row mb-4">
               <div class="col-md-6">
                 <div class="form-check">
@@ -269,7 +262,6 @@
               </div>
             </div>
 
-            <!-- Buttons -->
             <div class="d-grid gap-2 d-md-flex justify-content-md-center">
               <button type="submit" class="btn btn-primary me-md-2">
                 <i class="fas fa-calculator me-2"></i>Calculate Fare
@@ -287,7 +279,6 @@
             <p class="mt-2">Calculating your fare...</p>
           </div>
 
-          <!-- Fare Breakdown -->
           <div id="fareResult" style="display: none;">
             <div class="fare-breakdown">
               <h4 class="text-center mb-3">
@@ -313,14 +304,12 @@
     </div>
   </div>
 
-<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
 let map, directionsService, directionsRenderer;
-let pickupMarker, dropMarker; // ✅ Add dropMarker here
+let pickupMarker, dropMarker;
 let currentPosition = null;
-
 
   function initMap() {
     const defaultCenter = { lat: 17.3850, lng: 78.4867 };
@@ -360,20 +349,31 @@ let currentPosition = null;
         geocoder.geocode({ location: currentPosition }, (results, status) => {
           if (status === "OK" && results[0]) {
             document.getElementById("pickup").value = results[0].formatted_address;
-            const city = extractCityFromAddress(results[0].formatted_address);
-            if (city) fetchFuelPrice(city);
+            
+            // CORRECTED: Pass the full result object to extract the structured locality
+            const city = extractCityFromAddress(results[0]); 
+            
+            if (city) {
+              console.log("Successfully extracted city:", city);
+              fetchFuelPrice(city);
+            } else {
+              console.log("Could not find locality in geocode results.");
+            }
           }
         });
       }, () => alert("Location access denied."));
     }
   });
 
-  function extractCityFromAddress(address) {
-    const parts = address.split(',');
-    for (let part of parts) {
-      const cleaned = part.trim();
-      if (cleaned && !cleaned.match(/^\d/) && cleaned.length > 2) {
-        return cleaned;
+  // CORRECTED: Parses Google Maps address_components strictly for city/district data
+  function extractCityFromAddress(geocodeResult) {
+    if (geocodeResult.address_components) {
+      for (let component of geocodeResult.address_components) {
+        if (component.types.includes("locality")) {
+          return component.long_name;
+        } else if (component.types.includes("administrative_area_level_2")) {
+          return component.long_name;
+        }
       }
     }
     return null;
@@ -412,24 +412,19 @@ let currentPosition = null;
       });
     });
   }
-    document.getElementById("resetForm").addEventListener("click", function () {
-    // Reset the form fields
-    document.getElementById("fareForm").reset();
 
-    // Hide the fare result
+  document.getElementById("resetForm").addEventListener("click", function () {
+    document.getElementById("fareForm").reset();
     document.getElementById("fareResult").style.display = "none";
 
-    // Clear markers and directions
     if (pickupMarker) pickupMarker.setMap(null);
     if (dropMarker) dropMarker.setMap(null);
     directionsRenderer.set('directions', { routes: [] });
 
-    // Clear fuel price and make it editable
     const fuelInput = document.getElementById("fuelPrice");
     fuelInput.value = '';
     fuelInput.readOnly = false;
 
-    // Reset map center
     map.setCenter({ lat: 17.3850, lng: 78.4867 });
     map.setZoom(12);
   });
@@ -481,9 +476,8 @@ let currentPosition = null;
   window.onload = initMap;
 </script>
 
-<!-- Google Maps -->
 <script async defer
-  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDWtc27j3ZH1Xc0aC0jYv_72zBF7JiaAwA&libraries=places&callback=initMap">
+  src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places&callback=initMap">
 </script>
 
 </body>
